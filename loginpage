@@ -1,0 +1,119 @@
+//login.html
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Login Page</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+		}
+		form {
+			width: 50%;
+			margin: 40px auto;
+			padding: 20px;
+			border: 1px solid #ccc;
+			border-radius: 10px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+		}
+		label {
+			display: block;
+			margin-bottom: 10px;
+		}
+		input[type="text"], input[type="password"] {
+			width: 100%;
+			padding: 10px;
+			margin-bottom: 20px;
+			border: 1px solid #ccc;
+		}
+		input[type="submit"] {
+			background-color: #4CAF50;
+			color: #fff;
+			padding: 10px 20px;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+		}
+		input[type="submit"]:hover {
+			background-color: #3e8e41;
+		}
+		.error {
+			color: #FF0000;
+			font-size: 12px;
+		}
+	</style>
+</head>
+<body>
+	<form id="login-form" action="login.php" method="post">
+		<h2>Login Page</h2>
+		<label for="username">Username:</label>
+		<input type="text" id="username" name="username" required>
+		<label for="password">Password:</label>
+		<input type="password" id="password" name="password" required>
+		<div class="error" id="password-error"></div>
+		<input type="submit" value="Login">
+	</form>
+
+	<script>
+		const passwordInput = document.getElementById('password');
+		const passwordError = document.getElementById('password-error');
+
+		passwordInput.addEventListener('input', () => {
+			const password = passwordInput.value;
+			if (!password.match(/\d/)) {
+				passwordError.textContent = 'Password must contain at least one digit (0-9)';
+			} else if (!password.match(/[A-Z]/) || !password.match(/[a-z]/)) {
+				passwordError.textContent = 'Password must contain at least one uppercase and one lowercase letter';
+			} else {
+				passwordError.textContent = '';
+			}
+		});
+	</script>
+</body>
+</html>
+
+
+///login.php
+
+<?php
+// Configuration
+$db_host = 'localhost';
+$db_username = 'root';
+$db_password = '';
+$db_name = 'users';
+
+// Create connection
+$conn = new mysqli($db_host, $db_username, $db_password, $db_name);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Login user
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username = $_POST["username"];
+    $password = $_POST["password"];
+
+    $query = "SELECT * FROM users WHERE username = '$username'";
+    $result = $conn->query($query);
+
+    if ($result->num_rows > 0) {
+        $user_data = $result->fetch_assoc();
+        if (password_verify($password, $user_data['password'])) {
+            // Login successful, redirect to dashboard
+            header('Location: dashboard.php');
+            exit;
+        } else {
+            echo "Invalid password";
+        }
+    } else {
+        echo "Username not found";
+    }
+}
+
+$conn->close();
+?>
+
+
+
